@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost
--- Generation Time: Sep 26, 2026 at 06:00 AM
+-- Generation Time: Sep 26, 2026 at 06:26 AM
 -- Server version: 8.0.17
 -- PHP Version: 8.3.24
 
@@ -141,7 +141,75 @@ CREATE TABLE `customers` (
 --
 
 INSERT INTO `customers` (`id`, `first_name`, `last_name`, `home_address`, `home_city`, `home_state`, `home_zip_code`, `home_country`, `office_address`, `office_city`, `office_state`, `office_zip_code`, `office_country`, `phone`, `phone_2`, `email`, `notes`, `created_at`, `updated_at`) VALUES
-(1, 'Margaret', 'Garcia', '1094 Alpha Avenue', 'Jacksonville Beach', 'FL', '32250', 'United States', NULL, NULL, NULL, NULL, 'United States', '9042425787', NULL, 'mgarcia@dayrep.com', 'Lorem ipsum dolor sit amet consectetur adipiscing elit mauris rhoncus, in odio morbi congue laoreet aenean magna ultricies.', '2026-09-26 08:57:08', '2026-09-26 09:46:39');
+(1, 'Margaret', 'Garcia', '1094 Alpha Avenue', 'Jacksonville Beach', 'FL', '32250', 'United States', NULL, NULL, NULL, NULL, 'United States', '9042425787', NULL, 'mgarcia@dayrep.com', 'Lorem ipsum dolor sit amet consectetur adipiscing elit mauris rhoncus, in odio morbi congue laoreet aenean magna ultricies.', '2026-09-26 08:57:08', '2026-09-26 09:46:39'),
+(2, 'Spencer', 'Hudson', NULL, NULL, NULL, NULL, 'United States', NULL, NULL, NULL, NULL, 'United States', '(772) 249-3375', NULL, 'spence7789@gmail.com', NULL, '2026-09-26 10:20:54', '2026-09-26 10:20:54');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `estimates`
+--
+
+CREATE TABLE `estimates` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `number` int(10) UNSIGNED NOT NULL,
+  `customer_id` bigint(20) UNSIGNED NOT NULL,
+  `vehicle_id` bigint(20) UNSIGNED DEFAULT NULL,
+  `service_writer_id` bigint(20) UNSIGNED DEFAULT NULL,
+  `due_date` date DEFAULT NULL,
+  `customer_comments` text COLLATE utf8mb4_unicode_ci,
+  `recommendations` text COLLATE utf8mb4_unicode_ci,
+  `po_number` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `completed_at` timestamp NULL DEFAULT NULL,
+  `payment_terms` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'On Receipt',
+  `order_status` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'estimate',
+  `workflow` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'estimates',
+  `authorized_at` timestamp NULL DEFAULT NULL,
+  `labels` json DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `estimate_line_items`
+--
+
+CREATE TABLE `estimate_line_items` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `estimate_service_id` bigint(20) UNSIGNED NOT NULL,
+  `type` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `description` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `price` decimal(12,2) NOT NULL DEFAULT '0.00',
+  `quantity` decimal(12,2) NOT NULL DEFAULT '1.00',
+  `discount` decimal(12,2) DEFAULT NULL,
+  `status` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `sort_order` int(10) UNSIGNED NOT NULL DEFAULT '0',
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `estimate_services`
+--
+
+CREATE TABLE `estimate_services` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `estimate_id` bigint(20) UNSIGNED NOT NULL,
+  `name` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `notes` text COLLATE utf8mb4_unicode_ci,
+  `authorized` tinyint(1) NOT NULL DEFAULT '0',
+  `discount_percent` decimal(8,3) NOT NULL DEFAULT '0.000',
+  `epa_percent` decimal(8,3) NOT NULL DEFAULT '0.000',
+  `shop_supplies_percent` decimal(8,3) NOT NULL DEFAULT '0.000',
+  `tax_percent` decimal(8,3) NOT NULL DEFAULT '0.000',
+  `sort_order` int(10) UNSIGNED NOT NULL DEFAULT '0',
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -296,7 +364,10 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES
 (20, '2026_09_26_053351_remove_customer_id_from_vehicles_and_create_customer_vehicle_table', 11),
 (21, '2026_09_26_053922_restore_vehicle_customer_ownership_and_add_mileage_vin', 12),
 (22, '2026_09_26_054807_add_phone_2_to_customers_table', 13),
-(23, '2026_09_26_055156_add_country_to_general_settings_table', 14);
+(23, '2026_09_26_055156_add_country_to_general_settings_table', 14),
+(24, '2026_09_26_061127_create_estimates_table', 15),
+(25, '2026_09_26_061128_create_estimate_services_table', 15),
+(26, '2026_09_26_061129_create_estimate_line_items_table', 15);
 
 -- --------------------------------------------------------
 
@@ -398,7 +469,11 @@ INSERT INTO `permissions` (`id`, `name`, `guard_name`, `created_at`, `updated_at
 (33, 'vehicles.view', 'web', '2026-09-26 09:10:14', '2026-09-26 09:10:14'),
 (34, 'vehicles.create', 'web', '2026-09-26 09:10:14', '2026-09-26 09:10:14'),
 (35, 'vehicles.edit', 'web', '2026-09-26 09:10:14', '2026-09-26 09:10:14'),
-(36, 'vehicles.delete', 'web', '2026-09-26 09:10:14', '2026-09-26 09:10:14');
+(36, 'vehicles.delete', 'web', '2026-09-26 09:10:14', '2026-09-26 09:10:14'),
+(37, 'estimates.view', 'web', '2026-09-26 10:13:48', '2026-09-26 10:13:48'),
+(38, 'estimates.create', 'web', '2026-09-26 10:13:48', '2026-09-26 10:13:48'),
+(39, 'estimates.edit', 'web', '2026-09-26 10:13:48', '2026-09-26 10:13:48'),
+(40, 'estimates.delete', 'web', '2026-09-26 10:13:48', '2026-09-26 10:13:48');
 
 -- --------------------------------------------------------
 
@@ -564,7 +639,11 @@ INSERT INTO `role_has_permissions` (`permission_id`, `role_id`) VALUES
 (33, 2),
 (34, 2),
 (35, 2),
-(36, 2);
+(36, 2),
+(37, 2),
+(38, 2),
+(39, 2),
+(40, 2);
 
 -- --------------------------------------------------------
 
@@ -586,14 +665,7 @@ CREATE TABLE `sessions` (
 --
 
 INSERT INTO `sessions` (`id`, `user_id`, `ip_address`, `user_agent`, `payload`, `last_activity`) VALUES
-('0svEs5DDvA202I6lCjIn4au2OaFV1C9nYLf92jFR', NULL, '127.0.0.1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Cursor/3.22.7 Chrome/148.0.7778.280 Electron/42.10.0 Safari/537.36', 'eyJfdG9rZW4iOiJxNUhrWnd0V3A3anhkTXc4N1JWdmRqMmhUUDNXODM2WEtMNGszSUkyIiwiX3ByZXZpb3VzIjp7InVybCI6Imh0dHA6XC9cLzEyNy4wLjAuMTo4MDAwIiwicm91dGUiOm51bGx9LCJfZmxhc2giOnsib2xkIjpbXSwibmV3IjpbXX19', 1790393555),
-('4DZY3cjTofoLOK2bn1yFYJpyF02YfGp3a0OQFwdj', 4, '127.0.0.1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Cursor/3.22.7 Chrome/148.0.7778.280 Electron/42.10.0 Safari/537.36', 'eyJfdG9rZW4iOiI0QmRaWFNHaUt2STRQNkNUcHNUc05HaGh6akRlVHJOclZrWEJYak9OIiwiX2ZsYXNoIjp7Im9sZCI6W10sIm5ldyI6W119LCJfcHJldmlvdXMiOnsidXJsIjoiaHR0cDpcL1wvbG9jYWxob3N0OjgwMDBcL2FwaVwvdXNlciIsInJvdXRlIjpudWxsfSwibG9naW5fd2ViXzU5YmEzNmFkZGMyYjJmOTQwMTU4MGYwMTRjN2Y1OGVhNGUzMDk4OWQiOjQsInBhc3N3b3JkX2hhc2hfd2ViIjoiNjNmYmUwNjY1NGQ5ZjVkYWE2NzIwODFjMGM1NjU1MDY1MzhhNjE3OWQ0MDc3MTFhNGE3MGIyOTBhMGM4ZTVhNiJ9', 1790402395),
-('GWtmC4ULDYhhQTPTTw1bPsHWZOZ1IjP916g1cwYj', 1, '127.0.0.1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36', 'eyJfdG9rZW4iOiJleGNYcDVpdlVlMFM2bWJZWXhQREJWS010bE5KbGlZVzh3REx3Y3pPIiwiX3ByZXZpb3VzIjp7InVybCI6Imh0dHA6XC9cL2xvY2FsaG9zdDo4MDAwXC9hcGlcL3Byb2R1Y3RzIiwicm91dGUiOm51bGx9LCJfZmxhc2giOnsib2xkIjpbXSwibmV3IjpbXX0sImxvZ2luX3dlYl81OWJhMzZhZGRjMmIyZjk0MDE1ODBmMDE0YzdmNThlYTRlMzA5ODlkIjoxLCJwYXNzd29yZF9oYXNoX3dlYiI6ImNmNDA5NzUwMzVkNzE4YzAzZWY3NjI1N2ZmZjZiYWZkMWRiNTJhZTA0NGRhYjUxODJmZjc4NjEyOGRjYmRiZjMifQ==', 1790394706),
-('JQsSY8pD0GWoWYe9q2ZShkBXZt5Pfz6ZyRh1THbh', NULL, '127.0.0.1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Cursor/3.22.7 Chrome/148.0.7778.280 Electron/42.10.0 Safari/537.36', 'eyJfdG9rZW4iOiJyc1Q4SmRHMmhYQkVNa3BPTDBBcUZVcERKNnFlazlFMGFZbXRLOENFIiwiX3ByZXZpb3VzIjp7InVybCI6Imh0dHA6XC9cL2xvY2FsaG9zdDo4MDAwIiwicm91dGUiOm51bGx9LCJfZmxhc2giOnsib2xkIjpbXSwibmV3IjpbXX19', 1790390476),
-('NpHRxkwSQaWOuvqhH2oKsBIbDErXuP4n5TxtzgwM', NULL, '127.0.0.1', 'curl/8.7.1', 'eyJfdG9rZW4iOiJ1aUd4d3JycGlaUEdKVzcwbDJ3TTdNaEZURXVoZWRJb3ZPU1FYZUpJIiwiX3ByZXZpb3VzIjp7InVybCI6Imh0dHA6XC9cLzEyNy4wLjAuMTo4MDAwXC9zYW5jdHVtXC9jc3JmLWNvb2tpZSIsInJvdXRlIjoic2FuY3R1bS5jc3JmLWNvb2tpZSJ9LCJfZmxhc2giOnsib2xkIjpbXSwibmV3IjpbXX19', 1790390458),
-('OlM4HHXLjLHzhwzjEf6WuOnfbWKCB9OokzojyMJ7', NULL, '127.0.0.1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Cursor/3.22.7 Chrome/148.0.7778.280 Electron/42.10.0 Safari/537.36', 'eyJfdG9rZW4iOiJldnFpb0dSQVNIaVROaHZFdk5QdE9UQzV1eFc2UXpYZVdoQk82Q3NKIiwiX3ByZXZpb3VzIjp7InVybCI6Imh0dHA6XC9cLzEyNy4wLjAuMTo4MDAwIiwicm91dGUiOm51bGx9LCJfZmxhc2giOnsib2xkIjpbXSwibmV3IjpbXX19', 1790390455),
-('sBPosL8EInfj208zHc7jsLenbbU2IoONxsRn7GYQ', NULL, '127.0.0.1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Cursor/3.22.7 Chrome/148.0.7778.280 Electron/42.10.0 Safari/537.36', 'eyJfdG9rZW4iOiJHWDZKMzlpSDhRZVkydVd3bUFJd2dlaE5ONXdRTzg0V2VtdkJmVXI0IiwiX3ByZXZpb3VzIjp7InVybCI6Imh0dHA6XC9cLzEyNy4wLjAuMTo4MDAxIiwicm91dGUiOm51bGx9LCJfZmxhc2giOnsib2xkIjpbXSwibmV3IjpbXX19', 1790390460),
-('xvcghb7w3TNqCGpn3MNGzzfFmT5o8bGdvwuxeJ1p', NULL, '127.0.0.1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Cursor/3.22.7 Chrome/148.0.7778.280 Electron/42.10.0 Safari/537.36', 'eyJfdG9rZW4iOiJ2R3ZWbjdOa0huV3ZWS0ZxZlRjQTNIcE5ndzdSbkFuRlAxM2c3UGkwIiwiX3ByZXZpb3VzIjp7InVybCI6Imh0dHA6XC9cLzEyNy4wLjAuMTo4MDAwIiwicm91dGUiOm51bGx9LCJfZmxhc2giOnsib2xkIjpbXSwibmV3IjpbXX19', 1790390826);
+('4DZY3cjTofoLOK2bn1yFYJpyF02YfGp3a0OQFwdj', 4, '127.0.0.1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Cursor/3.22.7 Chrome/148.0.7778.280 Electron/42.10.0 Safari/537.36', 'eyJfdG9rZW4iOiI0QmRaWFNHaUt2STRQNkNUcHNUc05HaGh6akRlVHJOclZrWEJYak9OIiwiX2ZsYXNoIjp7Im9sZCI6W10sIm5ldyI6W119LCJfcHJldmlvdXMiOnsidXJsIjoiaHR0cDpcL1wvbG9jYWxob3N0OjgwMDBcL2FwaVwvdmVoaWNsZXM/Y3VzdG9tZXJfaWQ9MSIsInJvdXRlIjpudWxsfSwibG9naW5fd2ViXzU5YmEzNmFkZGMyYjJmOTQwMTU4MGYwMTRjN2Y1OGVhNGUzMDk4OWQiOjQsInBhc3N3b3JkX2hhc2hfd2ViIjoiNjNmYmUwNjY1NGQ5ZjVkYWE2NzIwODFjMGM1NjU1MDY1MzhhNjE3OWQ0MDc3MTFhNGE3MGIyOTBhMGM4ZTVhNiJ9', 1790403877);
 
 -- --------------------------------------------------------
 
@@ -696,6 +768,30 @@ ALTER TABLE `categories`
 ALTER TABLE `customers`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `customers_email_unique` (`email`);
+
+--
+-- Indexes for table `estimates`
+--
+ALTER TABLE `estimates`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `estimates_number_unique` (`number`),
+  ADD KEY `estimates_customer_id_foreign` (`customer_id`),
+  ADD KEY `estimates_vehicle_id_foreign` (`vehicle_id`),
+  ADD KEY `estimates_service_writer_id_foreign` (`service_writer_id`);
+
+--
+-- Indexes for table `estimate_line_items`
+--
+ALTER TABLE `estimate_line_items`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `estimate_line_items_estimate_service_id_foreign` (`estimate_service_id`);
+
+--
+-- Indexes for table `estimate_services`
+--
+ALTER TABLE `estimate_services`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `estimate_services_estimate_id_foreign` (`estimate_id`);
 
 --
 -- Indexes for table `failed_jobs`
@@ -845,7 +941,25 @@ ALTER TABLE `categories`
 -- AUTO_INCREMENT for table `customers`
 --
 ALTER TABLE `customers`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+
+--
+-- AUTO_INCREMENT for table `estimates`
+--
+ALTER TABLE `estimates`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `estimate_line_items`
+--
+ALTER TABLE `estimate_line_items`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `estimate_services`
+--
+ALTER TABLE `estimate_services`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `failed_jobs`
@@ -875,13 +989,13 @@ ALTER TABLE `jobs`
 -- AUTO_INCREMENT for table `migrations`
 --
 ALTER TABLE `migrations`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=24;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=27;
 
 --
 -- AUTO_INCREMENT for table `permissions`
 --
 ALTER TABLE `permissions`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=37;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=41;
 
 --
 -- AUTO_INCREMENT for table `personal_access_tokens`
@@ -922,6 +1036,26 @@ ALTER TABLE `vehicles`
 --
 -- Constraints for dumped tables
 --
+
+--
+-- Constraints for table `estimates`
+--
+ALTER TABLE `estimates`
+  ADD CONSTRAINT `estimates_customer_id_foreign` FOREIGN KEY (`customer_id`) REFERENCES `customers` (`id`) ON DELETE RESTRICT,
+  ADD CONSTRAINT `estimates_service_writer_id_foreign` FOREIGN KEY (`service_writer_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  ADD CONSTRAINT `estimates_vehicle_id_foreign` FOREIGN KEY (`vehicle_id`) REFERENCES `vehicles` (`id`) ON DELETE SET NULL;
+
+--
+-- Constraints for table `estimate_line_items`
+--
+ALTER TABLE `estimate_line_items`
+  ADD CONSTRAINT `estimate_line_items_estimate_service_id_foreign` FOREIGN KEY (`estimate_service_id`) REFERENCES `estimate_services` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `estimate_services`
+--
+ALTER TABLE `estimate_services`
+  ADD CONSTRAINT `estimate_services_estimate_id_foreign` FOREIGN KEY (`estimate_id`) REFERENCES `estimates` (`id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `model_has_permissions`
