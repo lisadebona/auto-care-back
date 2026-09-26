@@ -4,6 +4,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BrandController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CustomerController;
+use App\Http\Controllers\EstimateController;
 use App\Http\Controllers\FeeSettingController;
 use App\Http\Controllers\GeneralSettingController;
 use App\Http\Controllers\PermissionController;
@@ -32,6 +33,12 @@ Route::post('/vehicles', [VehicleController::class, 'store'])->middleware('permi
 Route::put('/vehicles/{vehicle}', [VehicleController::class, 'update'])->middleware('permission:vehicles.edit');
 Route::post('/vehicles/{vehicle}', [VehicleController::class, 'update'])->middleware('permission:vehicles.edit');
 Route::delete('/vehicles/{vehicle}', [VehicleController::class, 'destroy'])->middleware('permission:vehicles.delete');
+
+Route::get('/estimates', [EstimateController::class, 'index'])->middleware('permission:estimates.view');
+Route::post('/estimates', [EstimateController::class, 'store'])->middleware('permission:estimates.create');
+Route::get('/estimates/{estimate}', [EstimateController::class, 'show'])->middleware('permission:estimates.view');
+Route::put('/estimates/{estimate}', [EstimateController::class, 'update'])->middleware('permission:estimates.edit');
+Route::delete('/estimates/{estimate}', [EstimateController::class, 'destroy'])->middleware('permission:estimates.delete');
 
 Route::get('/roles', [RoleController::class, 'index'])->middleware('permission:roles.view');
 Route::post('/roles', [RoleController::class, 'store'])->middleware('permission:roles.create');
