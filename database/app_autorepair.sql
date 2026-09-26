@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost
--- Generation Time: Sep 26, 2026 at 05:58 AM
+-- Generation Time: Sep 26, 2026 at 06:00 AM
 -- Server version: 8.0.17
 -- PHP Version: 8.3.24
 
@@ -329,7 +329,8 @@ CREATE TABLE `model_has_roles` (
 INSERT INTO `model_has_roles` (`role_id`, `model_type`, `model_id`) VALUES
 (2, 'App\\Models\\User', 1),
 (2, 'App\\Models\\User', 2),
-(3, 'App\\Models\\User', 3);
+(3, 'App\\Models\\User', 3),
+(2, 'App\\Models\\User', 4);
 
 -- --------------------------------------------------------
 
@@ -586,12 +587,12 @@ CREATE TABLE `sessions` (
 
 INSERT INTO `sessions` (`id`, `user_id`, `ip_address`, `user_agent`, `payload`, `last_activity`) VALUES
 ('0svEs5DDvA202I6lCjIn4au2OaFV1C9nYLf92jFR', NULL, '127.0.0.1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Cursor/3.22.7 Chrome/148.0.7778.280 Electron/42.10.0 Safari/537.36', 'eyJfdG9rZW4iOiJxNUhrWnd0V3A3anhkTXc4N1JWdmRqMmhUUDNXODM2WEtMNGszSUkyIiwiX3ByZXZpb3VzIjp7InVybCI6Imh0dHA6XC9cLzEyNy4wLjAuMTo4MDAwIiwicm91dGUiOm51bGx9LCJfZmxhc2giOnsib2xkIjpbXSwibmV3IjpbXX19', 1790393555),
+('4DZY3cjTofoLOK2bn1yFYJpyF02YfGp3a0OQFwdj', 4, '127.0.0.1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Cursor/3.22.7 Chrome/148.0.7778.280 Electron/42.10.0 Safari/537.36', 'eyJfdG9rZW4iOiI0QmRaWFNHaUt2STRQNkNUcHNUc05HaGh6akRlVHJOclZrWEJYak9OIiwiX2ZsYXNoIjp7Im9sZCI6W10sIm5ldyI6W119LCJfcHJldmlvdXMiOnsidXJsIjoiaHR0cDpcL1wvbG9jYWxob3N0OjgwMDBcL2FwaVwvdXNlciIsInJvdXRlIjpudWxsfSwibG9naW5fd2ViXzU5YmEzNmFkZGMyYjJmOTQwMTU4MGYwMTRjN2Y1OGVhNGUzMDk4OWQiOjQsInBhc3N3b3JkX2hhc2hfd2ViIjoiNjNmYmUwNjY1NGQ5ZjVkYWE2NzIwODFjMGM1NjU1MDY1MzhhNjE3OWQ0MDc3MTFhNGE3MGIyOTBhMGM4ZTVhNiJ9', 1790402395),
 ('GWtmC4ULDYhhQTPTTw1bPsHWZOZ1IjP916g1cwYj', 1, '127.0.0.1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36', 'eyJfdG9rZW4iOiJleGNYcDVpdlVlMFM2bWJZWXhQREJWS010bE5KbGlZVzh3REx3Y3pPIiwiX3ByZXZpb3VzIjp7InVybCI6Imh0dHA6XC9cL2xvY2FsaG9zdDo4MDAwXC9hcGlcL3Byb2R1Y3RzIiwicm91dGUiOm51bGx9LCJfZmxhc2giOnsib2xkIjpbXSwibmV3IjpbXX0sImxvZ2luX3dlYl81OWJhMzZhZGRjMmIyZjk0MDE1ODBmMDE0YzdmNThlYTRlMzA5ODlkIjoxLCJwYXNzd29yZF9oYXNoX3dlYiI6ImNmNDA5NzUwMzVkNzE4YzAzZWY3NjI1N2ZmZjZiYWZkMWRiNTJhZTA0NGRhYjUxODJmZjc4NjEyOGRjYmRiZjMifQ==', 1790394706),
 ('JQsSY8pD0GWoWYe9q2ZShkBXZt5Pfz6ZyRh1THbh', NULL, '127.0.0.1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Cursor/3.22.7 Chrome/148.0.7778.280 Electron/42.10.0 Safari/537.36', 'eyJfdG9rZW4iOiJyc1Q4SmRHMmhYQkVNa3BPTDBBcUZVcERKNnFlazlFMGFZbXRLOENFIiwiX3ByZXZpb3VzIjp7InVybCI6Imh0dHA6XC9cL2xvY2FsaG9zdDo4MDAwIiwicm91dGUiOm51bGx9LCJfZmxhc2giOnsib2xkIjpbXSwibmV3IjpbXX19', 1790390476),
 ('NpHRxkwSQaWOuvqhH2oKsBIbDErXuP4n5TxtzgwM', NULL, '127.0.0.1', 'curl/8.7.1', 'eyJfdG9rZW4iOiJ1aUd4d3JycGlaUEdKVzcwbDJ3TTdNaEZURXVoZWRJb3ZPU1FYZUpJIiwiX3ByZXZpb3VzIjp7InVybCI6Imh0dHA6XC9cLzEyNy4wLjAuMTo4MDAwXC9zYW5jdHVtXC9jc3JmLWNvb2tpZSIsInJvdXRlIjoic2FuY3R1bS5jc3JmLWNvb2tpZSJ9LCJfZmxhc2giOnsib2xkIjpbXSwibmV3IjpbXX19', 1790390458),
 ('OlM4HHXLjLHzhwzjEf6WuOnfbWKCB9OokzojyMJ7', NULL, '127.0.0.1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Cursor/3.22.7 Chrome/148.0.7778.280 Electron/42.10.0 Safari/537.36', 'eyJfdG9rZW4iOiJldnFpb0dSQVNIaVROaHZFdk5QdE9UQzV1eFc2UXpYZVdoQk82Q3NKIiwiX3ByZXZpb3VzIjp7InVybCI6Imh0dHA6XC9cLzEyNy4wLjAuMTo4MDAwIiwicm91dGUiOm51bGx9LCJfZmxhc2giOnsib2xkIjpbXSwibmV3IjpbXX19', 1790390455),
 ('sBPosL8EInfj208zHc7jsLenbbU2IoONxsRn7GYQ', NULL, '127.0.0.1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Cursor/3.22.7 Chrome/148.0.7778.280 Electron/42.10.0 Safari/537.36', 'eyJfdG9rZW4iOiJHWDZKMzlpSDhRZVkydVd3bUFJd2dlaE5ONXdRTzg0V2VtdkJmVXI0IiwiX3ByZXZpb3VzIjp7InVybCI6Imh0dHA6XC9cLzEyNy4wLjAuMTo4MDAxIiwicm91dGUiOm51bGx9LCJfZmxhc2giOnsib2xkIjpbXSwibmV3IjpbXX19', 1790390460),
-('uli1jI9L0J80YewJ2hurbKWrlF4yOgvqe0UsGz4p', 1, '127.0.0.1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Cursor/3.22.7 Chrome/148.0.7778.280 Electron/42.10.0 Safari/537.36', 'eyJfdG9rZW4iOiJhY3pCUWtrY2ZvZ2JJczJEejVLek5ET0hvVGVOU0hGRzIzMEdTbW1TIiwiX3ByZXZpb3VzIjp7InVybCI6Imh0dHA6XC9cL2xvY2FsaG9zdDo4MDAwXC9hcGlcL3VzZXIiLCJyb3V0ZSI6bnVsbH0sIl9mbGFzaCI6eyJvbGQiOltdLCJuZXciOltdfSwibG9naW5fd2ViXzU5YmEzNmFkZGMyYjJmOTQwMTU4MGYwMTRjN2Y1OGVhNGUzMDk4OWQiOjEsInBhc3N3b3JkX2hhc2hfd2ViIjoiY2Y0MDk3NTAzNWQ3MThjMDNlZjc2MjU3ZmZmNmJhZmQxZGI1MmFlMDQ0ZGFiNTE4MmZmNzg2MTI4ZGNiZGJmMyJ9', 1790402142),
 ('xvcghb7w3TNqCGpn3MNGzzfFmT5o8bGdvwuxeJ1p', NULL, '127.0.0.1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Cursor/3.22.7 Chrome/148.0.7778.280 Electron/42.10.0 Safari/537.36', 'eyJfdG9rZW4iOiJ2R3ZWbjdOa0huV3ZWS0ZxZlRjQTNIcE5ndzdSbkFuRlAxM2c3UGkwIiwiX3ByZXZpb3VzIjp7InVybCI6Imh0dHA6XC9cLzEyNy4wLjAuMTo4MDAwIiwicm91dGUiOm51bGx9LCJfZmxhc2giOnsib2xkIjpbXSwibmV3IjpbXX19', 1790390826);
 
 -- --------------------------------------------------------
@@ -621,7 +622,8 @@ CREATE TABLE `users` (
 INSERT INTO `users` (`id`, `name`, `email`, `phone`, `hourly_rate`, `flat_rate`, `email_verified_at`, `password`, `remember_token`, `created_at`, `updated_at`) VALUES
 (1, 'Test User', 'testuser3@example.com', NULL, NULL, 0, NULL, '$2y$12$gLIbxy6zyjBqKpN9NIWVd.BOle42em2kDSzi2dQmZqJQakN2aCijW', NULL, '2026-09-25 10:53:24', '2026-09-25 10:53:24'),
 (2, 'Lisa DeBona', 'lisaqdebona@gmail.com', '2083183596', NULL, 0, NULL, '$2y$12$cSgJCirHsvJpL/NZxaF0fOc1Qi7Bbw55nn.1QqoQgUimV/THEKzG.', NULL, '2026-09-26 07:22:19', '2026-09-26 07:22:19'),
-(3, 'Steve Morgan', 'steve.morgan@autocare.com', NULL, 65.00, 1, NULL, '$2y$12$FsVmEpSyJ2eN7PMav2eqk.DRztfTG3CJ/vndmM5B3v8O7fO3/yiK2', NULL, '2026-09-26 07:23:15', '2026-09-26 08:19:35');
+(3, 'Steve Morgan', 'steve.morgan@autocare.com', NULL, 65.00, 1, NULL, '$2y$12$FsVmEpSyJ2eN7PMav2eqk.DRztfTG3CJ/vndmM5B3v8O7fO3/yiK2', NULL, '2026-09-26 07:23:15', '2026-09-26 08:19:35'),
+(4, 'Hermie', 'hermiebarit@gmail.com', NULL, NULL, 0, NULL, '$2y$12$nyy2V.MaqHBfQGoMUI0we.yGUYs2nxWlcLqNOip37yvAtSrQJttlW', NULL, '2026-09-26 09:59:39', '2026-09-26 09:59:39');
 
 -- --------------------------------------------------------
 
@@ -909,7 +911,7 @@ ALTER TABLE `roles`
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `vehicles`
