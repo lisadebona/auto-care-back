@@ -25,6 +25,16 @@ class UserController extends Controller
 
         $users = User::query()
             ->with('roles:id,name')
+            ->when($request->input('search'), function ($query, string $search): void {
+                $query->where(function ($query) use ($search): void {
+                    $query->where('name', 'like', "%{$search}%")
+                        ->orWhere('email', 'like', "%{$search}%")
+                        ->orWhere('phone', 'like', "%{$search}%")
+                        ->orWhereHas('roles', function ($query) use ($search): void {
+                            $query->where('name', 'like', "%{$search}%");
+                        });
+                });
+            })
             ->orderBy('name')
             ->get(['id', 'name', 'email', 'phone', 'hourly_rate', 'flat_rate', 'created_at'])
             ->map(fn (User $user) => $this->userPayload($user));
