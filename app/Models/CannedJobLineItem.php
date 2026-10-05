@@ -3,7 +3,7 @@
 namespace App\Models;
 
 use App\Enums\EstimateItemType;
-use Database\Factories\EstimateLineItemFactory;
+use Database\Factories\CannedJobLineItemFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -11,19 +11,18 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 #[Fillable([
-    'estimate_service_id',
+    'canned_job_id',
     'type',
     'description',
     'price',
     'quantity',
     'discount',
-    'status',
     'remarks',
     'sort_order',
 ])]
-class EstimateLineItem extends Model
+class CannedJobLineItem extends Model
 {
-    /** @use HasFactory<EstimateLineItemFactory> */
+    /** @use HasFactory<CannedJobLineItemFactory> */
     use HasFactory;
 
     /**
@@ -41,11 +40,11 @@ class EstimateLineItem extends Model
     ];
 
     /**
-     * @return BelongsTo<EstimateService, $this>
+     * @return BelongsTo<CannedJob, $this>
      */
-    public function service(): BelongsTo
+    public function cannedJob(): BelongsTo
     {
-        return $this->belongsTo(EstimateService::class, 'estimate_service_id');
+        return $this->belongsTo(CannedJob::class);
     }
 
     /**

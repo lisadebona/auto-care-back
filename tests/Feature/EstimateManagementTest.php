@@ -75,6 +75,7 @@ class EstimateManagementTest extends TestCase
                             'description' => 'Diagnostic labor',
                             'price' => 120,
                             'quantity' => 1,
+                            'remarks' => ['Not Completed'],
                         ],
                         [
                             'type' => 'part',
@@ -92,6 +93,7 @@ class EstimateManagementTest extends TestCase
             ->assertJsonPath('estimate.order_status', 'estimate')
             ->assertJsonPath('estimate.services.0.name', 'Power Steering Diagnosis')
             ->assertJsonPath('estimate.services.0.line_items.0.type', 'labor')
+            ->assertJsonPath('estimate.services.0.line_items.0.remarks', ['Not Completed'])
             ->assertJsonPath('estimate.totals.labor', '120.00')
             ->assertJsonPath('estimate.totals.parts', '37.00');
 

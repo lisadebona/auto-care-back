@@ -3,14 +3,14 @@
 namespace Database\Factories;
 
 use App\Enums\EstimateItemType;
-use App\Models\EstimateLineItem;
-use App\Models\EstimateService;
+use App\Models\CannedJob;
+use App\Models\CannedJobLineItem;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends Factory<EstimateLineItem>
+ * @extends Factory<CannedJobLineItem>
  */
-class EstimateLineItemFactory extends Factory
+class CannedJobLineItemFactory extends Factory
 {
     /**
      * @return array<string, mixed>
@@ -18,13 +18,12 @@ class EstimateLineItemFactory extends Factory
     public function definition(): array
     {
         return [
-            'estimate_service_id' => EstimateService::factory(),
+            'canned_job_id' => CannedJob::factory(),
             'type' => EstimateItemType::Part,
-            'description' => fake()->optional()->words(3, true),
-            'price' => fake()->randomFloat(2, 0, 500),
+            'description' => fake()->words(3, true),
+            'price' => fake()->randomFloat(2, 1, 100),
             'quantity' => 1,
             'discount' => null,
-            'status' => null,
             'remarks' => null,
             'sort_order' => 0,
         ];

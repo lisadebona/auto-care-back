@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BrandController;
+use App\Http\Controllers\CannedJobController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\EstimateController;
@@ -60,6 +61,12 @@ Route::get('/brands', [BrandController::class, 'index'])->middleware('permission
 Route::post('/brands', [BrandController::class, 'store'])->middleware('permission:brands.create');
 Route::put('/brands/{brand}', [BrandController::class, 'update'])->middleware('permission:brands.edit');
 Route::delete('/brands/{brand}', [BrandController::class, 'destroy'])->middleware('permission:brands.delete');
+
+Route::get('/canned-jobs', [CannedJobController::class, 'index'])->middleware('permission:canned-jobs.view|estimates.create|estimates.edit');
+Route::post('/canned-jobs', [CannedJobController::class, 'store'])->middleware('permission:canned-jobs.create');
+Route::get('/canned-jobs/{cannedJob}', [CannedJobController::class, 'show'])->middleware('permission:canned-jobs.view');
+Route::put('/canned-jobs/{cannedJob}', [CannedJobController::class, 'update'])->middleware('permission:canned-jobs.edit');
+Route::delete('/canned-jobs/{cannedJob}', [CannedJobController::class, 'destroy'])->middleware('permission:canned-jobs.delete');
 
 Route::get('/categories', [CategoryController::class, 'index'])->middleware('permission:categories.view');
 Route::post('/categories', [CategoryController::class, 'store'])->middleware('permission:categories.create');

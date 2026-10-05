@@ -175,6 +175,8 @@ class EstimateController extends Controller
             'services.*.line_items.*.quantity' => ['nullable', 'numeric', 'min:0'],
             'services.*.line_items.*.discount' => ['nullable', 'numeric', 'min:0'],
             'services.*.line_items.*.status' => ['nullable', 'string', 'max:100'],
+            'services.*.line_items.*.remarks' => ['nullable', 'array', 'max:20'],
+            'services.*.line_items.*.remarks.*' => ['string', 'max:100'],
         ]);
 
         if (($validated['vehicle_id'] ?? null) !== null) {
@@ -251,10 +253,38 @@ class EstimateController extends Controller
                     'quantity' => $itemData['quantity'] ?? 1,
                     'discount' => $itemData['discount'] ?? null,
                     'status' => $itemData['status'] ?? null,
+                    'remarks' => $this->remarks($itemData),
                     'sort_order' => $itemIndex,
                 ]);
             }
         }
+    }
+
+    /**
+     * @param  array<string, mixed>  $itemData
+     * @return list<string>|null
+     */
+    private function remarks(array $itemData): ?array
+    {
+        $remarks = $itemData['remarks'] ?? null;
+
+        if (! is_array($remarks)) {
+            $status = trim((string) ($itemData['status'] ?? ''));
+
+            return $status === '' ? null : [$status];
+        }
+
+        $cleaned = [];
+
+        foreach ($remarks as $remark) {
+            $remark = trim((string) $remark);
+
+            if ($remark !== '' && ! in_array($remark, $cleaned, true)) {
+                $cleaned[] = $remark;
+            }
+        }
+
+        return $cleaned === [] ? null : $cleaned;
     }
 
     /**
