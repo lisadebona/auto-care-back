@@ -32,7 +32,7 @@ class EstimateFactory extends Factory
             'completed_at' => null,
             'payment_terms' => Estimate::DEFAULT_PAYMENT_TERMS,
             'order_status' => EstimateOrderStatus::Estimate,
-            'workflow' => EstimateWorkflow::Estimates,
+            'workflow' => EstimateWorkflow::Estimates->value,
             'authorized_at' => null,
             'labels' => null,
         ];

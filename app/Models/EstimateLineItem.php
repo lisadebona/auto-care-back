@@ -19,6 +19,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
     'discount',
     'status',
     'remarks',
+    'technician_id',
     'sort_order',
 ])]
 class EstimateLineItem extends Model
@@ -46,6 +47,14 @@ class EstimateLineItem extends Model
     public function service(): BelongsTo
     {
         return $this->belongsTo(EstimateService::class, 'estimate_service_id');
+    }
+
+    /**
+     * @return BelongsTo<User, $this>
+     */
+    public function technician(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'technician_id');
     }
 
     /**

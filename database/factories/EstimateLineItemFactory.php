@@ -26,6 +26,7 @@ class EstimateLineItemFactory extends Factory
             'discount' => null,
             'status' => null,
             'remarks' => null,
+            'technician_id' => null,
             'sort_order' => 0,
         ];
     }

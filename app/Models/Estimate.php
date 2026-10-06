@@ -50,7 +50,7 @@ class Estimate extends Model
     /**
      * @var list<string>
      */
-    protected $appends = ['display_number', 'is_authorized', 'totals'];
+    protected $appends = ['display_number', 'is_authorized', 'totals', 'workflow_label'];
 
     /**
      * @var array<string, mixed>
@@ -101,6 +101,85 @@ class Estimate extends Model
     }
 
     /**
+     * Invoice numbers are the record ID plus a unique sequence that starts at 001.
+     *
+     * @return array{invoice_sequence: int, invoice_number: string}
+     */
+    public static function generateInvoiceNumber(int $recordId): array
+    {
+        $sequence = (int) static::query()->lockForUpdate()->max('invoice_sequence');
+        $sequence = $sequence < 1 ? 1 : $sequence + 1;
+
+        do {
+            $invoiceNumber = $recordId.str_pad((string) $sequence, 3, '0', STR_PAD_LEFT);
+            $taken = static::query()
+                ->where('invoice_number', $invoiceNumber)
+                ->whereKeyNot($recordId)
+                ->exists();
+
+            if ($taken) {
+                $sequence++;
+            }
+        } while ($taken);
+
+        return [
+            'invoice_sequence' => $sequence,
+            'invoice_number' => $invoiceNumber,
+        ];
+    }
+
+    /**
+     * Order numbers use the same format as invoice numbers: record ID plus a sequence starting at 001.
+     *
+     * @return array{order_sequence: int, order_number: string}
+     */
+    public static function generateOrderNumber(int $recordId): array
+    {
+        $sequence = (int) static::query()->lockForUpdate()->max('order_sequence');
+        $sequence = $sequence < 1 ? 1 : $sequence + 1;
+
+        do {
+            $orderNumber = $recordId.str_pad((string) $sequence, 3, '0', STR_PAD_LEFT);
+            $taken = static::query()
+                ->where('order_number', $orderNumber)
+                ->whereKeyNot($recordId)
+                ->exists();
+
+            if ($taken) {
+                $sequence++;
+            }
+        } while ($taken);
+
+        return [
+            'order_sequence' => $sequence,
+            'order_number' => $orderNumber,
+        ];
+    }
+
+    /**
+     * Format a PO number as PO + record ID + a unique number.
+     *
+     * The estimate number is the unique number. If that value is already
+     * taken, the unique number increments until the PO number is free.
+     */
+    public static function generatePoNumber(int $recordId, int $uniqueNumber): string
+    {
+        $poNumber = 'PO'.$recordId.$uniqueNumber;
+
+        while (
+            static::query()
+                ->where('po_number', $poNumber)
+                ->whereKeyNot($recordId)
+                ->exists()
+        ) {
+            $uniqueNumber++;
+            $poNumber = 'PO'.$recordId.$uniqueNumber;
+        }
+
+        return $poNumber;
+    }
+
+    /**
      * @return Attribute<string, never>
      */
     protected function displayNumber(): Attribute
@@ -117,7 +196,7 @@ class Estimate extends Model
     }
 
     /**
-     * @return Attribute<array{parts: string, labor: string, tires: string, subcontract: string, fees: string, grand_total: string}, never>
+     * @return Attribute<array{parts: string, labor: string, tires: string, subcontract: string, fees: string, subtotal: string, discount: string, shop_supplies: string, epa: string, tax: string, grand_total: string, paid_to_date: string}, never>
      */
     protected function totals(): Attribute
     {
@@ -127,22 +206,41 @@ class Estimate extends Model
             $tires = 0.0;
             $subcontract = 0.0;
             $fees = 0.0;
+            $discount = 0.0;
+            $shopSupplies = 0.0;
+            $epa = 0.0;
+            $tax = 0.0;
 
             foreach ($this->relationLoaded('services') ? $this->services : [] as $service) {
+                $itemsTotal = 0.0;
+
                 foreach ($service->relationLoaded('lineItems') ? $service->lineItems : [] as $item) {
-                    $subtotal = (float) $item->subtotal;
+                    $lineSubtotal = (float) $item->subtotal;
+                    $itemsTotal += $lineSubtotal;
 
                     match ($item->type) {
-                        EstimateItemType::Part => $parts += $subtotal,
-                        EstimateItemType::Labor => $labor += $subtotal,
-                        EstimateItemType::Tire => $tires += $subtotal,
-                        EstimateItemType::Subcontract => $subcontract += $subtotal,
-                        EstimateItemType::Fee => $fees += $subtotal,
+                        EstimateItemType::Part => $parts += $lineSubtotal,
+                        EstimateItemType::Labor => $labor += $lineSubtotal,
+                        EstimateItemType::Tire => $tires += $lineSubtotal,
+                        EstimateItemType::Subcontract => $subcontract += $lineSubtotal,
+                        EstimateItemType::Fee => $fees += $lineSubtotal,
                     };
                 }
+
+                $serviceDiscount = $itemsTotal * ((float) $service->discount_percent / 100);
+                $afterDiscount = $itemsTotal - $serviceDiscount;
+                $serviceEpa = $afterDiscount * ((float) $service->epa_percent / 100);
+                $serviceShop = $afterDiscount * ((float) $service->shop_supplies_percent / 100);
+                $serviceTax = ($afterDiscount + $serviceEpa + $serviceShop) * ((float) $service->tax_percent / 100);
+
+                $discount += $serviceDiscount;
+                $epa += $serviceEpa;
+                $shopSupplies += $serviceShop;
+                $tax += $serviceTax;
             }
 
-            $grand = $parts + $labor + $tires + $subcontract + $fees;
+            $subtotal = $parts + $labor + $tires + $subcontract + $fees;
+            $grand = $subtotal - $discount + $shopSupplies + $epa + $tax;
 
             return [
                 'parts' => number_format($parts, 2, '.', ''),
@@ -150,8 +248,31 @@ class Estimate extends Model
                 'tires' => number_format($tires, 2, '.', ''),
                 'subcontract' => number_format($subcontract, 2, '.', ''),
                 'fees' => number_format($fees, 2, '.', ''),
+                'subtotal' => number_format($subtotal, 2, '.', ''),
+                'discount' => number_format($discount, 2, '.', ''),
+                'shop_supplies' => number_format($shopSupplies, 2, '.', ''),
+                'epa' => number_format($epa, 2, '.', ''),
+                'tax' => number_format($tax, 2, '.', ''),
                 'grand_total' => number_format($grand, 2, '.', ''),
+                'paid_to_date' => number_format(0, 2, '.', ''),
             ];
+        });
+    }
+
+    /**
+     * @return Attribute<string, never>
+     */
+    protected function workflowLabel(): Attribute
+    {
+        return Attribute::get(function (): string {
+            $workflow = (string) $this->workflow;
+            $systemWorkflow = EstimateWorkflow::tryFrom($workflow);
+
+            if ($systemWorkflow instanceof EstimateWorkflow) {
+                return $systemWorkflow->label();
+            }
+
+            return CustomWorkflow::labelsByValue()[$workflow] ?? $workflow;
         });
     }
 
@@ -161,11 +282,12 @@ class Estimate extends Model
     protected function casts(): array
     {
         return [
+            'invoice_sequence' => 'integer',
+            'order_sequence' => 'integer',
             'due_date' => 'date',
             'completed_at' => 'datetime',
             'authorized_at' => 'datetime',
             'order_status' => EstimateOrderStatus::class,
-            'workflow' => EstimateWorkflow::class,
             'labels' => 'array',
         ];
     }

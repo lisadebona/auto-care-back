@@ -5,6 +5,7 @@ use App\Http\Controllers\BrandController;
 use App\Http\Controllers\CannedJobController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CustomerController;
+use App\Http\Controllers\CustomWorkflowController;
 use App\Http\Controllers\EstimateController;
 use App\Http\Controllers\FeeSettingController;
 use App\Http\Controllers\GeneralSettingController;
@@ -72,6 +73,11 @@ Route::get('/categories', [CategoryController::class, 'index'])->middleware('per
 Route::post('/categories', [CategoryController::class, 'store'])->middleware('permission:categories.create');
 Route::put('/categories/{category}', [CategoryController::class, 'update'])->middleware('permission:categories.edit');
 Route::delete('/categories/{category}', [CategoryController::class, 'destroy'])->middleware('permission:categories.delete');
+
+Route::get('/workflows', [CustomWorkflowController::class, 'index'])->middleware('permission:workflows.view');
+Route::post('/workflows', [CustomWorkflowController::class, 'store'])->middleware('permission:workflows.create');
+Route::put('/workflows/{customWorkflow}', [CustomWorkflowController::class, 'update'])->middleware('permission:workflows.edit');
+Route::delete('/workflows/{customWorkflow}', [CustomWorkflowController::class, 'destroy'])->middleware('permission:workflows.delete');
 
 Route::get('/settings/general', [GeneralSettingController::class, 'show'])->middleware('permission:general-settings.view');
 Route::put('/settings/general', [GeneralSettingController::class, 'update'])->middleware('permission:general-settings.edit');

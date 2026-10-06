@@ -7,6 +7,7 @@ use App\Enums\EstimateOrderStatus;
 use App\Enums\EstimateWorkflow;
 use App\Enums\FeeType;
 use App\Models\Customer;
+use App\Models\CustomWorkflow;
 use App\Models\Estimate;
 use App\Models\EstimateService;
 use App\Models\FeeSetting;
@@ -27,11 +28,13 @@ class EstimateController extends Controller
                 'customer:id,first_name,last_name',
                 'vehicle:id,customer_id,year,make,model,sub_model',
                 'serviceWriter:id,name',
-                'services.lineItems',
+                'services.lineItems.technician:id,name',
             ])
             ->when($request->input('search'), function ($query, string $search): void {
                 $query->where(function ($query) use ($search): void {
                     $query->where('number', 'like', "%{$search}%")
+                        ->orWhere('invoice_number', 'like', "%{$search}%")
+                        ->orWhere('order_number', 'like', "%{$search}%")
                         ->orWhere('po_number', 'like', "%{$search}%")
                         ->orWhereHas('customer', function ($query) use ($search): void {
                             $query->where('first_name', 'like', "%{$search}%")
@@ -49,6 +52,24 @@ class EstimateController extends Controller
             ->when($request->input('customer_id'), function ($query, mixed $customerId): void {
                 $query->where('customer_id', $customerId);
             })
+            ->when(
+                EstimateOrderStatus::tryFrom((string) $request->input('status')),
+                function ($query, EstimateOrderStatus $status): void {
+                    $query->where('order_status', $status);
+                },
+            )
+            ->when(
+                EstimateWorkflow::tryFrom((string) $request->input('workflow')),
+                function ($query, EstimateWorkflow $workflow): void {
+                    $query->where('workflow', $workflow);
+                },
+            )
+            ->when(
+                EstimateWorkflow::tryFrom((string) $request->input('except_workflow')),
+                function ($query, EstimateWorkflow $workflow): void {
+                    $query->where('workflow', '!=', $workflow);
+                },
+            )
             ->orderByDesc('number')
             ->get();
 
@@ -64,7 +85,7 @@ class EstimateController extends Controller
             'customer:id,first_name,last_name,phone,email',
             'vehicle:id,customer_id,year,make,model,sub_model,vin,mileage',
             'serviceWriter:id,name',
-            'services.lineItems',
+            'services.lineItems.technician:id,name',
         ]);
 
         return response()->json([
@@ -84,6 +105,14 @@ class EstimateController extends Controller
                 'service_writer_id' => $validated['service_writer_id'] ?? $request->user()?->id,
             ]);
 
+            if ($estimate->po_number === null) {
+                $estimate->update([
+                    'po_number' => Estimate::generatePoNumber($estimate->id, (int) $estimate->number),
+                ]);
+            }
+
+            $this->assignInvoiceNumber($estimate);
+            $this->assignOrderNumber($estimate);
             $this->syncServices($estimate, $validated['services'] ?? []);
 
             return $estimate;
@@ -94,7 +123,7 @@ class EstimateController extends Controller
                 'customer:id,first_name,last_name,phone,email',
                 'vehicle:id,customer_id,year,make,model,sub_model,vin,mileage',
                 'serviceWriter:id,name',
-                'services.lineItems',
+                'services.lineItems.technician:id,name',
             ]),
             'options' => $this->options($estimate->customer_id),
             'message' => 'Estimate created.',
@@ -107,6 +136,8 @@ class EstimateController extends Controller
 
         DB::transaction(function () use ($estimate, $validated): void {
             $estimate->update($this->estimateAttributes($validated, $estimate));
+            $this->assignInvoiceNumber($estimate);
+            $this->assignOrderNumber($estimate);
             $this->syncServices($estimate, $validated['services'] ?? []);
         });
 
@@ -115,7 +146,7 @@ class EstimateController extends Controller
                 'customer:id,first_name,last_name,phone,email',
                 'vehicle:id,customer_id,year,make,model,sub_model,vin,mileage',
                 'serviceWriter:id,name',
-                'services.lineItems',
+                'services.lineItems.technician:id,name',
             ]),
             'options' => $this->options($estimate->customer_id),
             'message' => 'Estimate saved.',
@@ -129,16 +160,36 @@ class EstimateController extends Controller
         return response()->json(['message' => 'Estimate deleted successfully.']);
     }
 
+    private function assignInvoiceNumber(Estimate $estimate): void
+    {
+        if ($estimate->order_status !== EstimateOrderStatus::Invoice || $estimate->invoice_number !== null) {
+            return;
+        }
+
+        $estimate->forceFill(Estimate::generateInvoiceNumber($estimate->id))->save();
+    }
+
+    private function assignOrderNumber(Estimate $estimate): void
+    {
+        if ($estimate->workflow !== EstimateWorkflow::InProgress->value || $estimate->order_number !== null) {
+            return;
+        }
+
+        $estimate->forceFill(Estimate::generateOrderNumber($estimate->id))->save();
+    }
+
     /**
      * @return array<string, mixed>
      */
     private function validated(Request $request, ?Estimate $estimate = null): array
     {
+        $poNumber = $request->filled('po_number') ? trim((string) $request->input('po_number')) : null;
+
         $request->merge([
             'vehicle_id' => $request->filled('vehicle_id') ? $request->input('vehicle_id') : null,
             'service_writer_id' => $request->filled('service_writer_id') ? $request->input('service_writer_id') : null,
             'due_date' => $request->filled('due_date') ? $request->input('due_date') : null,
-            'po_number' => $request->filled('po_number') ? $request->input('po_number') : null,
+            'po_number' => $poNumber === '' ? null : $poNumber,
             'completed_at' => $request->filled('completed_at') ? $request->input('completed_at') : null,
             'customer_comments' => $request->filled('customer_comments') ? $request->input('customer_comments') : null,
             'recommendations' => $request->filled('recommendations') ? $request->input('recommendations') : null,
@@ -152,11 +203,16 @@ class EstimateController extends Controller
             'due_date' => ['nullable', 'date'],
             'customer_comments' => ['nullable', 'string', 'max:5000'],
             'recommendations' => ['nullable', 'string', 'max:5000'],
-            'po_number' => ['nullable', 'string', 'max:255'],
+            'po_number' => [
+                'nullable',
+                'string',
+                'max:255',
+                Rule::unique(Estimate::class, 'po_number')->ignore($estimate?->id),
+            ],
             'completed_at' => ['nullable', 'date'],
             'payment_terms' => ['nullable', 'string', Rule::in(Estimate::PAYMENT_TERMS)],
             'order_status' => ['required', Rule::enum(EstimateOrderStatus::class)],
-            'workflow' => ['required', Rule::enum(EstimateWorkflow::class)],
+            'workflow' => ['required', 'string', 'max:255'],
             'authorized' => ['sometimes', 'boolean'],
             'labels' => ['nullable', 'array'],
             'labels.*' => ['string', 'max:100'],
@@ -177,7 +233,15 @@ class EstimateController extends Controller
             'services.*.line_items.*.status' => ['nullable', 'string', 'max:100'],
             'services.*.line_items.*.remarks' => ['nullable', 'array', 'max:20'],
             'services.*.line_items.*.remarks.*' => ['string', 'max:100'],
+            'services.*.line_items.*.technician_id' => ['nullable', 'integer', Rule::exists(User::class, 'id')],
         ]);
+
+        $this->assertLaborTechnicians($validated['services'] ?? []);
+
+        $this->assertWorkflowIsAllowed(
+            (string) ($validated['workflow'] ?? ''),
+            (string) ($validated['order_status'] ?? ''),
+        );
 
         if (($validated['vehicle_id'] ?? null) !== null) {
             $vehicleBelongsToCustomer = Vehicle::query()
@@ -195,6 +259,52 @@ class EstimateController extends Controller
         return $validated;
     }
 
+    private function assertWorkflowIsAllowed(string $workflow, string $orderStatus): void
+    {
+        $systemWorkflow = EstimateWorkflow::tryFrom($workflow);
+
+        if ($systemWorkflow instanceof EstimateWorkflow) {
+            if ($systemWorkflow === EstimateWorkflow::Invoices && $orderStatus !== EstimateOrderStatus::Invoice->value) {
+                throw ValidationException::withMessages([
+                    'workflow' => 'Invoices is only available on an invoice.',
+                ]);
+            }
+
+            return;
+        }
+
+        $customWorkflowExists = CustomWorkflow::query()->where('value', $workflow)->exists();
+
+        if (! $customWorkflowExists) {
+            throw ValidationException::withMessages([
+                'workflow' => 'The selected workflow is invalid.',
+            ]);
+        }
+    }
+
+    /**
+     * @return list<array{value: string, label: string}>
+     */
+    private function workflowOptions(): array
+    {
+        $workflows = array_map(
+            fn (EstimateWorkflow $workflow): array => [
+                'value' => $workflow->value,
+                'label' => $workflow->label(),
+            ],
+            EstimateWorkflow::cases(),
+        );
+
+        foreach (CustomWorkflow::query()->orderBy('name')->get(['value', 'name']) as $workflow) {
+            $workflows[] = [
+                'value' => $workflow->value,
+                'label' => $workflow->name,
+            ];
+        }
+
+        return $workflows;
+    }
+
     /**
      * @param  array<string, mixed>  $validated
      * @return array<string, mixed>
@@ -202,6 +312,14 @@ class EstimateController extends Controller
     private function estimateAttributes(array $validated, ?Estimate $estimate = null): array
     {
         $authorized = (bool) ($validated['authorized'] ?? false);
+        $orderStatus = EstimateOrderStatus::from($validated['order_status']);
+        $workflow = $validated['workflow'];
+        $becomingInvoice = $orderStatus === EstimateOrderStatus::Invoice
+            && ($estimate === null || $estimate->order_status !== EstimateOrderStatus::Invoice);
+
+        if ($becomingInvoice) {
+            $workflow = EstimateWorkflow::Invoices->value;
+        }
 
         return [
             'customer_id' => $validated['customer_id'],
@@ -210,11 +328,14 @@ class EstimateController extends Controller
             'due_date' => $validated['due_date'] ?? null,
             'customer_comments' => $validated['customer_comments'] ?? null,
             'recommendations' => $validated['recommendations'] ?? null,
-            'po_number' => $validated['po_number'] ?? null,
+            'po_number' => $validated['po_number']
+                ?? ($estimate !== null
+                    ? Estimate::generatePoNumber($estimate->id, (int) $estimate->number)
+                    : null),
             'completed_at' => $validated['completed_at'] ?? null,
             'payment_terms' => $validated['payment_terms'] ?? Estimate::DEFAULT_PAYMENT_TERMS,
-            'order_status' => $validated['order_status'],
-            'workflow' => $validated['workflow'],
+            'order_status' => $orderStatus,
+            'workflow' => $workflow,
             'authorized_at' => $authorized
                 ? ($estimate?->authorized_at ?? now())
                 : null,
@@ -254,6 +375,7 @@ class EstimateController extends Controller
                     'discount' => $itemData['discount'] ?? null,
                     'status' => $itemData['status'] ?? null,
                     'remarks' => $this->remarks($itemData),
+                    'technician_id' => $this->technicianId($itemData),
                     'sort_order' => $itemIndex,
                 ]);
             }
@@ -288,6 +410,59 @@ class EstimateController extends Controller
     }
 
     /**
+     * @param  list<array<string, mixed>>  $services
+     */
+    private function assertLaborTechnicians(array $services): void
+    {
+        $errors = [];
+
+        foreach ($services as $serviceIndex => $service) {
+            foreach ($service['line_items'] ?? [] as $itemIndex => $item) {
+                $technicianId = $item['technician_id'] ?? null;
+
+                if ($technicianId === null) {
+                    continue;
+                }
+
+                $key = "services.{$serviceIndex}.line_items.{$itemIndex}.technician_id";
+
+                if (($item['type'] ?? null) !== EstimateItemType::Labor->value) {
+                    $errors[$key] = 'A technician can only be assigned to labor.';
+
+                    continue;
+                }
+
+                $isTechnician = User::query()
+                    ->whereKey($technicianId)
+                    ->role(User::TECHNICIAN_ROLE)
+                    ->exists();
+
+                if (! $isTechnician) {
+                    $errors[$key] = 'Select a technician.';
+                }
+            }
+        }
+
+        if ($errors !== []) {
+            throw ValidationException::withMessages($errors);
+        }
+    }
+
+    /**
+     * @param  array<string, mixed>  $itemData
+     */
+    private function technicianId(array $itemData): ?int
+    {
+        if (($itemData['type'] ?? null) !== EstimateItemType::Labor->value) {
+            return null;
+        }
+
+        $technicianId = $itemData['technician_id'] ?? null;
+
+        return $technicianId === null ? null : (int) $technicianId;
+    }
+
+    /**
      * @return array{
      *     payment_terms: list<string>,
      *     order_statuses: list<string>,
@@ -295,6 +470,7 @@ class EstimateController extends Controller
      *     item_types: list<array{value: string, label: string}>,
      *     fee_defaults: array{epa_percent: string, shop_supplies_percent: string, tax_percent: string},
      *     service_writers: list<array{id: int, name: string}>,
+     *     technicians: list<array{id: int, name: string, hourly_rate: string|null, flat_rate: bool}>,
      *     customers: list<array{id: int, name: string}>,
      *     vehicles: list<array{id: int, customer_id: int, name: string}>
      * }
@@ -340,14 +516,22 @@ class EstimateController extends Controller
             ])
             ->all();
 
+        $technicians = User::query()
+            ->role(User::TECHNICIAN_ROLE)
+            ->orderBy('name')
+            ->get(['id', 'name', 'hourly_rate', 'flat_rate'])
+            ->map(fn (User $user): array => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'hourly_rate' => $user->hourly_rate,
+                'flat_rate' => $user->flat_rate,
+            ])
+            ->all();
+
         return [
             'payment_terms' => Estimate::PAYMENT_TERMS,
             'order_statuses' => array_column(EstimateOrderStatus::cases(), 'value'),
-            'workflows' => [
-                ['value' => EstimateWorkflow::Estimates->value, 'label' => 'Estimates'],
-                ['value' => EstimateWorkflow::InProgress->value, 'label' => 'In Progress'],
-                ['value' => EstimateWorkflow::Completed->value, 'label' => 'Completed'],
-            ],
+            'workflows' => $this->workflowOptions(),
             'item_types' => [
                 ['value' => EstimateItemType::Part->value, 'label' => 'Part'],
                 ['value' => EstimateItemType::Labor->value, 'label' => 'Labor'],
@@ -366,6 +550,7 @@ class EstimateController extends Controller
                 'tax_percent' => number_format((float) $fees->tax_rate, 3, '.', ''),
             ],
             'service_writers' => $serviceWriters,
+            'technicians' => $technicians,
             'customers' => $customers,
             'vehicles' => $vehicles,
         ];
