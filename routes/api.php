@@ -6,6 +6,7 @@ use App\Http\Controllers\CannedJobController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\CustomWorkflowController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EstimateController;
 use App\Http\Controllers\FeeSettingController;
 use App\Http\Controllers\GeneralSettingController;
@@ -35,6 +36,8 @@ Route::post('/vehicles', [VehicleController::class, 'store'])->middleware('permi
 Route::put('/vehicles/{vehicle}', [VehicleController::class, 'update'])->middleware('permission:vehicles.edit');
 Route::post('/vehicles/{vehicle}', [VehicleController::class, 'update'])->middleware('permission:vehicles.edit');
 Route::delete('/vehicles/{vehicle}', [VehicleController::class, 'destroy'])->middleware('permission:vehicles.delete');
+
+Route::get('/dashboard', DashboardController::class)->middleware('permission:estimates.view');
 
 Route::get('/estimates', [EstimateController::class, 'index'])->middleware('permission:estimates.view');
 Route::post('/estimates', [EstimateController::class, 'store'])->middleware('permission:estimates.create');
