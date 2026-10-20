@@ -167,9 +167,11 @@ class EstimateManagementTest extends TestCase
     {
         $actor = $this->estimateUser(['estimates.create', 'estimates.edit']);
         $customer = Customer::factory()->create();
+        $vehicle = Vehicle::factory()->create(['customer_id' => $customer->id]);
 
         $created = $this->actingAs($actor)->postJson('/api/estimates', [
             'customer_id' => $customer->id,
+            'vehicle_id' => $vehicle->id,
             'po_number' => '   ',
             'order_status' => 'estimate',
             'workflow' => 'estimates',
@@ -181,6 +183,7 @@ class EstimateManagementTest extends TestCase
 
         $this->actingAs($actor)->putJson("/api/estimates/{$estimateId}", [
             'customer_id' => $customer->id,
+            'vehicle_id' => $vehicle->id,
             'po_number' => null,
             'order_status' => 'estimate',
             'workflow' => 'estimates',
@@ -192,6 +195,7 @@ class EstimateManagementTest extends TestCase
     {
         $actor = $this->estimateUser(['estimates.create']);
         $customer = Customer::factory()->create();
+        $vehicle = Vehicle::factory()->create(['customer_id' => $customer->id]);
         Estimate::factory()->create([
             'customer_id' => $customer->id,
             'number' => 1000,
@@ -200,6 +204,7 @@ class EstimateManagementTest extends TestCase
 
         $this->actingAs($actor)->postJson('/api/estimates', [
             'customer_id' => $customer->id,
+            'vehicle_id' => $vehicle->id,
             'order_status' => 'estimate',
             'workflow' => 'estimates',
         ])->assertCreated()
@@ -212,6 +217,7 @@ class EstimateManagementTest extends TestCase
     {
         $actor = $this->estimateUser(['estimates.create', 'estimates.edit']);
         $customer = Customer::factory()->create();
+        $vehicle = Vehicle::factory()->create(['customer_id' => $customer->id]);
         Estimate::factory()->create([
             'customer_id' => $customer->id,
             'po_number' => 'PO-42',
@@ -219,6 +225,7 @@ class EstimateManagementTest extends TestCase
 
         $this->actingAs($actor)->postJson('/api/estimates', [
             'customer_id' => $customer->id,
+            'vehicle_id' => $vehicle->id,
             'po_number' => 'PO-42',
             'order_status' => 'estimate',
             'workflow' => 'estimates',
@@ -229,6 +236,7 @@ class EstimateManagementTest extends TestCase
 
         $created = $this->actingAs($actor)->postJson('/api/estimates', [
             'customer_id' => $customer->id,
+            'vehicle_id' => $vehicle->id,
             'po_number' => 'PO-99',
             'order_status' => 'estimate',
             'workflow' => 'estimates',
@@ -239,6 +247,7 @@ class EstimateManagementTest extends TestCase
 
         $this->actingAs($actor)->putJson("/api/estimates/{$estimateId}", [
             'customer_id' => $customer->id,
+            'vehicle_id' => $vehicle->id,
             'po_number' => 'PO-99',
             'order_status' => 'estimate',
             'workflow' => 'estimates',
@@ -257,9 +266,11 @@ class EstimateManagementTest extends TestCase
         ]);
         $technician->assignRole(User::TECHNICIAN_ROLE);
         $writer = User::factory()->create();
+        $vehicle = Vehicle::factory()->create(['customer_id' => $customer->id]);
 
         $this->actingAs($actor)->postJson('/api/estimates', [
             'customer_id' => $customer->id,
+            'vehicle_id' => $vehicle->id,
             'order_status' => 'estimate',
             'workflow' => 'estimates',
             'services' => [
@@ -286,6 +297,7 @@ class EstimateManagementTest extends TestCase
 
         $this->actingAs($actor)->postJson('/api/estimates', [
             'customer_id' => $customer->id,
+            'vehicle_id' => $vehicle->id,
             'order_status' => 'estimate',
             'workflow' => 'estimates',
             'services' => [
@@ -305,6 +317,7 @@ class EstimateManagementTest extends TestCase
 
         $this->actingAs($actor)->postJson('/api/estimates', [
             'customer_id' => $customer->id,
+            'vehicle_id' => $vehicle->id,
             'order_status' => 'estimate',
             'workflow' => 'estimates',
             'services' => [
@@ -327,9 +340,11 @@ class EstimateManagementTest extends TestCase
     {
         $actor = $this->estimateUser(['estimates.create']);
         $customer = Customer::factory()->create();
+        $vehicle = Vehicle::factory()->create(['customer_id' => $customer->id]);
 
         $this->actingAs($actor)->postJson('/api/estimates', [
             'customer_id' => $customer->id,
+            'vehicle_id' => $vehicle->id,
             'order_status' => 'estimate',
             'workflow' => 'dropped_off',
         ])->assertCreated()
@@ -345,6 +360,7 @@ class EstimateManagementTest extends TestCase
 
         $this->actingAs($actor)->postJson('/api/estimates', [
             'customer_id' => $customer->id,
+            'vehicle_id' => $vehicle->id,
             'order_status' => 'estimate',
             'workflow' => 'not-a-stage',
         ])->assertUnprocessable()
@@ -355,9 +371,11 @@ class EstimateManagementTest extends TestCase
     {
         $actor = $this->estimateUser(['estimates.view', 'estimates.create', 'estimates.edit']);
         $customer = Customer::factory()->create();
+        $vehicle = Vehicle::factory()->create(['customer_id' => $customer->id]);
 
         $created = $this->actingAs($actor)->postJson('/api/estimates', [
             'customer_id' => $customer->id,
+            'vehicle_id' => $vehicle->id,
             'order_status' => 'estimate',
             'workflow' => 'estimates',
         ])->assertCreated()
@@ -367,6 +385,7 @@ class EstimateManagementTest extends TestCase
 
         $this->actingAs($actor)->putJson("/api/estimates/{$estimateId}", [
             'customer_id' => $customer->id,
+            'vehicle_id' => $vehicle->id,
             'order_status' => 'estimate',
             'workflow' => 'in_progress',
         ])->assertOk()
@@ -374,6 +393,7 @@ class EstimateManagementTest extends TestCase
 
         $second = $this->actingAs($actor)->postJson('/api/estimates', [
             'customer_id' => $customer->id,
+            'vehicle_id' => $vehicle->id,
             'order_status' => 'estimate',
             'workflow' => 'in_progress',
         ])->assertCreated();
@@ -384,6 +404,7 @@ class EstimateManagementTest extends TestCase
 
         $this->actingAs($actor)->putJson("/api/estimates/{$secondId}", [
             'customer_id' => $customer->id,
+            'vehicle_id' => $vehicle->id,
             'order_status' => 'estimate',
             'workflow' => 'in_progress',
         ])->assertOk()
@@ -402,9 +423,11 @@ class EstimateManagementTest extends TestCase
     {
         $actor = $this->estimateUser(['estimates.view', 'estimates.create', 'estimates.edit']);
         $customer = Customer::factory()->create();
+        $vehicle = Vehicle::factory()->create(['customer_id' => $customer->id]);
 
         $created = $this->actingAs($actor)->postJson('/api/estimates', [
             'customer_id' => $customer->id,
+            'vehicle_id' => $vehicle->id,
             'order_status' => 'estimate',
             'workflow' => 'estimates',
         ])->assertCreated()
@@ -414,6 +437,7 @@ class EstimateManagementTest extends TestCase
 
         $this->actingAs($actor)->putJson("/api/estimates/{$estimateId}", [
             'customer_id' => $customer->id,
+            'vehicle_id' => $vehicle->id,
             'order_status' => 'invoice',
             'workflow' => 'estimates',
         ])->assertOk()
@@ -421,6 +445,7 @@ class EstimateManagementTest extends TestCase
 
         $second = $this->actingAs($actor)->postJson('/api/estimates', [
             'customer_id' => $customer->id,
+            'vehicle_id' => $vehicle->id,
             'order_status' => 'invoice',
             'workflow' => 'estimates',
         ])->assertCreated();
@@ -431,6 +456,7 @@ class EstimateManagementTest extends TestCase
 
         $this->actingAs($actor)->putJson("/api/estimates/{$secondId}", [
             'customer_id' => $customer->id,
+            'vehicle_id' => $vehicle->id,
             'order_status' => 'invoice',
             'workflow' => 'estimates',
         ])->assertOk()
@@ -449,9 +475,11 @@ class EstimateManagementTest extends TestCase
     {
         $actor = $this->estimateUser(['estimates.create', 'estimates.edit']);
         $customer = Customer::factory()->create();
+        $vehicle = Vehicle::factory()->create(['customer_id' => $customer->id]);
 
         $created = $this->actingAs($actor)->postJson('/api/estimates', [
             'customer_id' => $customer->id,
+            'vehicle_id' => $vehicle->id,
             'order_status' => 'estimate',
             'workflow' => 'dropped_off',
         ])->assertCreated()
@@ -461,6 +489,7 @@ class EstimateManagementTest extends TestCase
 
         $this->actingAs($actor)->putJson("/api/estimates/{$estimateId}", [
             'customer_id' => $customer->id,
+            'vehicle_id' => $vehicle->id,
             'order_status' => 'invoice',
             'workflow' => 'dropped_off',
         ])->assertOk()
@@ -468,6 +497,7 @@ class EstimateManagementTest extends TestCase
 
         $this->actingAs($actor)->putJson("/api/estimates/{$estimateId}", [
             'customer_id' => $customer->id,
+            'vehicle_id' => $vehicle->id,
             'order_status' => 'invoice',
             'workflow' => 'completed',
         ])->assertOk()
@@ -475,6 +505,7 @@ class EstimateManagementTest extends TestCase
 
         $this->actingAs($actor)->postJson('/api/estimates', [
             'customer_id' => $customer->id,
+            'vehicle_id' => $vehicle->id,
             'order_status' => 'invoice',
             'workflow' => 'estimates',
         ])->assertCreated()
@@ -482,6 +513,7 @@ class EstimateManagementTest extends TestCase
 
         $this->actingAs($actor)->postJson('/api/estimates', [
             'customer_id' => $customer->id,
+            'vehicle_id' => $vehicle->id,
             'order_status' => 'estimate',
             'workflow' => 'invoices',
         ])->assertUnprocessable()
@@ -537,7 +569,12 @@ class EstimateManagementTest extends TestCase
         $this->actingAs($actor)
             ->postJson('/api/estimates', [])
             ->assertUnprocessable()
-            ->assertJsonValidationErrors(['customer_id', 'order_status', 'workflow']);
+            ->assertJsonValidationErrors([
+                'customer_id' => 'Customer name is required.',
+                'vehicle_id' => 'Customer vehicle is required.',
+                'order_status',
+                'workflow',
+            ]);
     }
 
     /**

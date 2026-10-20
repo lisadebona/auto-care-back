@@ -199,7 +199,7 @@ class EstimateController extends Controller
 
         $validated = $request->validate([
             'customer_id' => ['required', 'integer', Rule::exists(Customer::class, 'id')],
-            'vehicle_id' => ['nullable', 'integer', Rule::exists(Vehicle::class, 'id')],
+            'vehicle_id' => ['required', 'integer', Rule::exists(Vehicle::class, 'id')],
             'service_writer_id' => ['nullable', 'integer', Rule::exists(User::class, 'id')],
             'due_date' => ['nullable', 'date'],
             'customer_comments' => ['nullable', 'string', 'max:5000'],
@@ -235,6 +235,9 @@ class EstimateController extends Controller
             'services.*.line_items.*.remarks' => ['nullable', 'array', 'max:20'],
             'services.*.line_items.*.remarks.*' => ['string', 'max:100'],
             'services.*.line_items.*.technician_id' => ['nullable', 'integer', Rule::exists(User::class, 'id')],
+        ], [
+            'customer_id.required' => 'Customer name is required.',
+            'vehicle_id.required' => 'Customer vehicle is required.',
         ]);
 
         $this->assertLaborTechnicians($validated['services'] ?? []);
@@ -244,17 +247,15 @@ class EstimateController extends Controller
             (string) ($validated['order_status'] ?? ''),
         );
 
-        if (($validated['vehicle_id'] ?? null) !== null) {
-            $vehicleBelongsToCustomer = Vehicle::query()
-                ->whereKey($validated['vehicle_id'])
-                ->where('customer_id', $validated['customer_id'])
-                ->exists();
+        $vehicleBelongsToCustomer = Vehicle::query()
+            ->whereKey($validated['vehicle_id'])
+            ->where('customer_id', $validated['customer_id'])
+            ->exists();
 
-            if (! $vehicleBelongsToCustomer) {
-                throw ValidationException::withMessages([
-                    'vehicle_id' => 'The selected vehicle does not belong to this customer.',
-                ]);
-            }
+        if (! $vehicleBelongsToCustomer) {
+            throw ValidationException::withMessages([
+                'vehicle_id' => 'The selected vehicle does not belong to this customer.',
+            ]);
         }
 
         return $validated;

@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Customer;
 use App\Models\CustomWorkflow;
 use App\Models\User;
+use App\Models\Vehicle;
 use Database\Seeders\RolesAndPermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -77,6 +78,7 @@ class WorkflowManagementTest extends TestCase
             'estimates.edit',
         ]);
         $customer = Customer::factory()->create();
+        $vehicle = Vehicle::factory()->create(['customer_id' => $customer->id]);
 
         $created = $this->actingAs($actor)->postJson('/api/workflows', [
             'name' => 'Waiting on Parts',
@@ -86,6 +88,7 @@ class WorkflowManagementTest extends TestCase
 
         $estimate = $this->actingAs($actor)->postJson('/api/estimates', [
             'customer_id' => $customer->id,
+            'vehicle_id' => $vehicle->id,
             'order_status' => 'estimate',
             'workflow' => $value,
         ])->assertCreated()
@@ -99,6 +102,7 @@ class WorkflowManagementTest extends TestCase
 
         $this->actingAs($actor)->postJson('/api/estimates', [
             'customer_id' => $customer->id,
+            'vehicle_id' => $vehicle->id,
             'order_status' => 'estimate',
             'workflow' => 'in_progress',
         ])->assertCreated()
@@ -109,6 +113,7 @@ class WorkflowManagementTest extends TestCase
 
         $this->actingAs($actor)->putJson("/api/estimates/{$estimateId}", [
             'customer_id' => $customer->id,
+            'vehicle_id' => $vehicle->id,
             'order_status' => 'invoice',
             'workflow' => $value,
         ])->assertOk()
@@ -116,6 +121,7 @@ class WorkflowManagementTest extends TestCase
 
         $this->actingAs($actor)->putJson("/api/estimates/{$estimateId}", [
             'customer_id' => $customer->id,
+            'vehicle_id' => $vehicle->id,
             'order_status' => 'invoice',
             'workflow' => $value,
         ])->assertOk()
@@ -136,10 +142,12 @@ class WorkflowManagementTest extends TestCase
             'estimates.create',
         ]);
         $customer = Customer::factory()->create();
+        $vehicle = Vehicle::factory()->create(['customer_id' => $customer->id]);
         $workflow = CustomWorkflow::factory()->create(['name' => 'Waiting on Parts']);
 
         $this->actingAs($actor)->postJson('/api/estimates', [
             'customer_id' => $customer->id,
+            'vehicle_id' => $vehicle->id,
             'order_status' => 'estimate',
             'workflow' => $workflow->value,
         ])->assertCreated();
