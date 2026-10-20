@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Customer;
 use App\Models\Estimate;
+use App\Models\GeneralSetting;
 use App\Models\User;
 use App\Models\Vehicle;
 use Database\Seeders\RolesAndPermissionsSeeder;
@@ -485,6 +486,48 @@ class EstimateManagementTest extends TestCase
             'workflow' => 'invoices',
         ])->assertUnprocessable()
             ->assertJsonValidationErrors(['workflow' => 'Invoices is only available on an invoice.']);
+    }
+
+    public function test_estimate_options_include_shop_and_customer_details_for_printing(): void
+    {
+        $actor = $this->estimateUser(['estimates.view']);
+        GeneralSetting::factory()->create([
+            'company_name' => 'Acme Auto Repair',
+            'phone' => '(555) 010-1000',
+        ]);
+        $customer = Customer::factory()->create([
+            'first_name' => 'Ada',
+            'last_name' => 'Lovelace',
+            'home_address' => '1 Analytical Engine',
+            'phone' => '5550101000',
+        ]);
+        $vehicle = Vehicle::factory()->create([
+            'customer_id' => $customer->id,
+            'vin' => '1HGCM82633A004352',
+            'mileage' => 12000,
+        ]);
+        $estimate = Estimate::factory()->create([
+            'customer_id' => $customer->id,
+            'vehicle_id' => $vehicle->id,
+            'service_writer_id' => $actor->id,
+        ]);
+
+        $this->actingAs($actor)
+            ->getJson("/api/estimates/{$estimate->id}")
+            ->assertOk()
+            ->assertJsonPath('options.shop.company_name', 'Acme Auto Repair')
+            ->assertJsonPath('options.shop.phone', '(555) 010-1000')
+            ->assertJsonFragment([
+                'id' => $customer->id,
+                'name' => 'Ada Lovelace',
+                'home_address' => '1 Analytical Engine',
+                'phone' => '5550101000',
+            ])
+            ->assertJsonFragment([
+                'id' => $vehicle->id,
+                'vin' => '1HGCM82633A004352',
+                'mileage' => 12000,
+            ]);
     }
 
     public function test_create_requires_customer_and_status_fields(): void

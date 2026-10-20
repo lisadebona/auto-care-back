@@ -11,6 +11,7 @@ use App\Models\CustomWorkflow;
 use App\Models\Estimate;
 use App\Models\EstimateService;
 use App\Models\FeeSetting;
+use App\Models\GeneralSetting;
 use App\Models\User;
 use App\Models\Vehicle;
 use Illuminate\Http\JsonResponse;
@@ -471,8 +472,9 @@ class EstimateController extends Controller
      *     fee_defaults: array{epa_percent: string, shop_supplies_percent: string, tax_percent: string},
      *     service_writers: list<array{id: int, name: string}>,
      *     technicians: list<array{id: int, name: string, hourly_rate: string|null, flat_rate: bool}>,
-     *     customers: list<array{id: int, name: string}>,
-     *     vehicles: list<array{id: int, customer_id: int, name: string}>
+     *     customers: list<array{id: int, name: string, phone: string, email: string|null, home_address: string|null, home_city: string|null, home_state: string|null, home_zip_code: string|null}>,
+     *     vehicles: list<array{id: int, customer_id: int, name: string, year: int, make: string, model: string, sub_model: string|null, vin: string|null, mileage: int|null}>,
+     *     shop: array{company_name: string|null, website: string|null, logo_url: string|null, email: string|null, phone: string|null, timezone: string, address: string|null, city: string|null, state: string|null, zip_code: string|null, country: string}
      * }
      */
     private function options(?int $customerId = null): array
@@ -482,10 +484,26 @@ class EstimateController extends Controller
         $customers = Customer::query()
             ->orderBy('last_name')
             ->orderBy('first_name')
-            ->get(['id', 'first_name', 'last_name'])
+            ->get([
+                'id',
+                'first_name',
+                'last_name',
+                'phone',
+                'email',
+                'home_address',
+                'home_city',
+                'home_state',
+                'home_zip_code',
+            ])
             ->map(fn (Customer $customer): array => [
                 'id' => $customer->id,
                 'name' => $customer->name,
+                'phone' => $customer->phone,
+                'email' => $customer->email,
+                'home_address' => $customer->home_address,
+                'home_city' => $customer->home_city,
+                'home_state' => $customer->home_state,
+                'home_zip_code' => $customer->home_zip_code,
             ])
             ->all();
 
@@ -499,11 +517,17 @@ class EstimateController extends Controller
         }
 
         $vehicles = $vehiclesQuery
-            ->get(['id', 'customer_id', 'year', 'make', 'model', 'sub_model'])
+            ->get(['id', 'customer_id', 'year', 'make', 'model', 'sub_model', 'vin', 'mileage'])
             ->map(fn (Vehicle $vehicle): array => [
                 'id' => $vehicle->id,
                 'customer_id' => $vehicle->customer_id,
                 'name' => $vehicle->name,
+                'year' => (int) $vehicle->year,
+                'make' => $vehicle->make,
+                'model' => $vehicle->model,
+                'sub_model' => $vehicle->sub_model,
+                'vin' => $vehicle->vin,
+                'mileage' => $vehicle->mileage === null ? null : (int) $vehicle->mileage,
             ])
             ->all();
 
@@ -553,6 +577,7 @@ class EstimateController extends Controller
             'technicians' => $technicians,
             'customers' => $customers,
             'vehicles' => $vehicles,
+            'shop' => GeneralSetting::current()->details(),
         ];
     }
 }

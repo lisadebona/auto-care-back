@@ -97,18 +97,6 @@ class GeneralSettingController extends Controller
      */
     private function payload(GeneralSetting $settings): array
     {
-        return [
-            'company_name' => $settings->company_name,
-            'website' => $settings->website,
-            'logo_url' => $settings->logo_url,
-            'email' => $settings->email,
-            'phone' => $settings->phone,
-            'timezone' => $settings->timezone,
-            'address' => $settings->address,
-            'city' => $settings->city,
-            'state' => $settings->state,
-            'zip_code' => $settings->zip_code,
-            'country' => $settings->country ?? 'United States',
-        ];
+        return $settings->details();
     }
 }

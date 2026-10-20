@@ -40,6 +40,40 @@ class GeneralSetting extends Model
     }
 
     /**
+     * Shop details printed on estimates and invoices.
+     *
+     * @return array{
+     *     company_name: string|null,
+     *     website: string|null,
+     *     logo_url: string|null,
+     *     email: string|null,
+     *     phone: string|null,
+     *     timezone: string,
+     *     address: string|null,
+     *     city: string|null,
+     *     state: string|null,
+     *     zip_code: string|null,
+     *     country: string
+     * }
+     */
+    public function details(): array
+    {
+        return [
+            'company_name' => $this->company_name,
+            'website' => $this->website,
+            'logo_url' => $this->logo_url,
+            'email' => $this->email,
+            'phone' => $this->phone,
+            'timezone' => $this->timezone,
+            'address' => $this->address,
+            'city' => $this->city,
+            'state' => $this->state,
+            'zip_code' => $this->zip_code,
+            'country' => $this->country ?? 'United States',
+        ];
+    }
+
+    /**
      * @return Attribute<string|null, never>
      */
     protected function logoUrl(): Attribute
