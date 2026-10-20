@@ -17,7 +17,7 @@ class RolesAndPermissionsSeeder extends Seeder
     {
         app(PermissionRegistrar::class)->forgetCachedPermissions();
 
-        $permissions = collect(['users', 'customers', 'vehicles', 'estimates', 'roles', 'permissions', 'products', 'brands', 'categories', 'canned-jobs', 'workflows'])
+        $permissions = collect(['users', 'customers', 'vehicles', 'estimates', 'roles', 'permissions', 'products', 'brands', 'categories', 'canned-jobs', 'workflows', 'messages'])
             ->crossJoin(['view', 'create', 'edit', 'delete'])
             ->map(fn (array $pair) => Permission::findOrCreate(implode('.', $pair)));
 

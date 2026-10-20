@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\VerifyMailHandlerToken;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -18,10 +19,15 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->statefulApi();
 
+        $middleware->validateCsrfTokens(except: [
+            'api/internal/mailgun/messages',
+        ]);
+
         $middleware->alias([
             'role' => RoleMiddleware::class,
             'permission' => PermissionMiddleware::class,
             'role_or_permission' => RoleOrPermissionMiddleware::class,
+            'mail-handler' => VerifyMailHandlerToken::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

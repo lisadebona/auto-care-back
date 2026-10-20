@@ -7,9 +7,11 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\CustomWorkflowController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\EmailMessageController;
 use App\Http\Controllers\EstimateController;
 use App\Http\Controllers\FeeSettingController;
 use App\Http\Controllers\GeneralSettingController;
+use App\Http\Controllers\MailgunIngestController;
 use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\RoleController;
@@ -88,3 +90,9 @@ Route::post('/settings/general', [GeneralSettingController::class, 'update'])->m
 
 Route::get('/settings/fees-and-rates', [FeeSettingController::class, 'show'])->middleware('permission:fees-and-rates.view');
 Route::put('/settings/fees-and-rates', [FeeSettingController::class, 'update'])->middleware('permission:fees-and-rates.edit');
+
+Route::get('/messages', [EmailMessageController::class, 'index'])->middleware('permission:messages.view');
+Route::post('/messages', [EmailMessageController::class, 'store'])->middleware('permission:messages.create');
+Route::get('/messages/{emailMessage}', [EmailMessageController::class, 'show'])->middleware('permission:messages.view');
+
+Route::post('/internal/mailgun/messages', [MailgunIngestController::class, 'store'])->middleware('mail-handler');
