@@ -18,6 +18,7 @@ class EmailMessageController extends Controller
         $messages = EmailMessage::query()
             ->select([
                 'id',
+                'uuid',
                 'mailgun_id',
                 'subject',
                 'from_email',

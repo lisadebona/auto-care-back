@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasPublicUuid;
 use Database\Factories\EmailMessageFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -24,7 +25,7 @@ use Illuminate\Database\Eloquent\Model;
 class EmailMessage extends Model
 {
     /** @use HasFactory<EmailMessageFactory> */
-    use HasFactory;
+    use HasFactory, HasPublicUuid;
 
     /**
      * @return array<string, string>

@@ -36,14 +36,14 @@ class DashboardController extends Controller
     }
 
     /**
-     * @return list<array{id: int, reference: string, customer: string|null, vehicle: string|null, total: string, order_status: string, workflow: string}>
+     * @return list<array{id: int, uuid: string, reference: string, customer_id: int|null, customer_uuid: string|null, customer: string|null, vehicle_id: int|null, vehicle_uuid: string|null, vehicle: string|null, total: string, order_status: string, workflow: string}>
      */
     private function recentItems(string $workflow): array
     {
         return Estimate::query()
             ->with([
-                'customer:id,first_name,last_name',
-                'vehicle:id,year,make,model,sub_model',
+                'customer:id,uuid,first_name,last_name',
+                'vehicle:id,uuid,year,make,model,sub_model',
                 'services.lineItems',
             ])
             ->where('workflow', $workflow)
@@ -53,8 +53,13 @@ class DashboardController extends Controller
             ->get()
             ->map(fn (Estimate $estimate): array => [
                 'id' => $estimate->id,
+                'uuid' => $estimate->uuid,
                 'reference' => $this->reference($estimate),
+                'customer_id' => $estimate->customer_id,
+                'customer_uuid' => $estimate->customer?->uuid,
                 'customer' => $estimate->customer?->name,
+                'vehicle_id' => $estimate->vehicle_id,
+                'vehicle_uuid' => $estimate->vehicle?->uuid,
                 'vehicle' => $estimate->vehicle?->name,
                 'total' => $estimate->totals['grand_total'],
                 'order_status' => $estimate->order_status->value,

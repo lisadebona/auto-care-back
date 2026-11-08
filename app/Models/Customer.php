@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasPublicUuid;
 use Database\Factories\CustomerFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -32,7 +33,7 @@ class Customer extends Model
     public const DEFAULT_COUNTRY = 'United States';
 
     /** @use HasFactory<CustomerFactory> */
-    use HasFactory;
+    use HasFactory, HasPublicUuid;
 
     /**
      * @var list<string>

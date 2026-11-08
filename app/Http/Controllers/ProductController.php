@@ -26,7 +26,7 @@ class ProductController extends Controller
                         ->orWhere('part_number', 'like', "%{$search}%");
                 });
             })
-            ->with(['brand:id,name', 'category:id,name', 'images', 'mainImage'])
+            ->with(['brand:id,uuid,name', 'category:id,uuid,name', 'images', 'mainImage'])
             ->latest()
             ->get()
             ->map(fn (Product $product): array => $this->payload($product));
@@ -71,7 +71,7 @@ class ProductController extends Controller
             throw $exception;
         }
 
-        return response()->json($this->payload($product->load(['brand:id,name', 'category:id,name', 'images', 'mainImage'])), 201);
+        return response()->json($this->payload($product->load(['brand:id,uuid,name', 'category:id,uuid,name', 'images', 'mainImage'])), 201);
     }
 
     public function update(Request $request, Product $product): JsonResponse
@@ -160,7 +160,7 @@ class ProductController extends Controller
 
         Storage::disk('public')->delete($removedImages->pluck('path')->all());
 
-        return response()->json($this->payload($product->refresh()->load(['brand:id,name', 'category:id,name', 'images', 'mainImage'])));
+        return response()->json($this->payload($product->refresh()->load(['brand:id,uuid,name', 'category:id,uuid,name', 'images', 'mainImage'])));
     }
 
     public function destroy(Product $product): JsonResponse
@@ -245,10 +245,11 @@ class ProductController extends Controller
      */
     private function payload(Product $product): array
     {
-        $product->loadMissing(['brand:id,name', 'category:id,name', 'images', 'mainImage']);
+        $product->loadMissing(['brand:id,uuid,name', 'category:id,uuid,name', 'images', 'mainImage']);
 
         return [
             'id' => $product->id,
+            'uuid' => $product->uuid,
             'name' => $product->name,
             'description' => $product->description,
             'unit_price' => $product->unit_price,
@@ -256,8 +257,10 @@ class ProductController extends Controller
             'retail_price' => $product->retail_price,
             'stock_quantity' => $product->stock_quantity,
             'brand_id' => $product->brand_id,
+            'brand_uuid' => $product->brand?->uuid,
             'brand_name' => $product->brand?->name,
             'category_id' => $product->category_id,
+            'category_uuid' => $product->category?->uuid,
             'category_name' => $product->category?->name,
             'upc_code' => $product->upc_code,
             'part_number' => $product->part_number,

@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Enums\EstimateItemType;
 use App\Enums\EstimateOrderStatus;
 use App\Enums\EstimateWorkflow;
+use App\Models\Concerns\HasPublicUuid;
 use Database\Factories\EstimateFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -45,7 +46,7 @@ class Estimate extends Model
     ];
 
     /** @use HasFactory<EstimateFactory> */
-    use HasFactory;
+    use HasFactory, HasPublicUuid;
 
     /**
      * @var list<string>

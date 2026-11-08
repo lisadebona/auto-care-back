@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Str;
 use Spatie\Permission\PermissionRegistrar;
 
 class CurrentDataSeeder extends Seeder
@@ -34,9 +35,39 @@ class CurrentDataSeeder extends Seeder
             }
         }
 
+        $this->assignMissingUuids();
+
         Schema::enableForeignKeyConstraints();
 
         app(PermissionRegistrar::class)->forgetCachedPermissions();
+    }
+
+    private function assignMissingUuids(): void
+    {
+        foreach ([
+            'users',
+            'customers',
+            'vehicles',
+            'brands',
+            'categories',
+            'products',
+            'estimates',
+            'canned_jobs',
+            'email_messages',
+            'custom_workflows',
+        ] as $table) {
+            if (! Schema::hasColumn($table, 'uuid')) {
+                continue;
+            }
+
+            $ids = DB::table($table)->whereNull('uuid')->pluck('id');
+
+            foreach ($ids as $id) {
+                DB::table($table)->where('id', $id)->update([
+                    'uuid' => (string) Str::uuid(),
+                ]);
+            }
+        }
     }
 
     /**

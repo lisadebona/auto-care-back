@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasPublicUuid;
 use Database\Factories\CustomWorkflowFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -13,7 +14,7 @@ use Illuminate\Support\Str;
 class CustomWorkflow extends Model
 {
     /** @use HasFactory<CustomWorkflowFactory> */
-    use HasFactory;
+    use HasFactory, HasPublicUuid;
 
     protected static function booted(): void
     {

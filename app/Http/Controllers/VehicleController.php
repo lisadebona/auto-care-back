@@ -15,7 +15,7 @@ class VehicleController extends Controller
     public function index(Request $request): JsonResponse
     {
         $vehicles = Vehicle::query()
-            ->with('customer:id,first_name,last_name')
+            ->with('customer:id,uuid,first_name,last_name')
             ->when($request->input('customer_id'), function ($query, mixed $customerId): void {
                 $query->where('customer_id', $customerId);
             })
@@ -52,7 +52,7 @@ class VehicleController extends Controller
 
         $vehicle = Vehicle::query()->create($validated);
 
-        return response()->json($vehicle->load('customer:id,first_name,last_name'), 201);
+        return response()->json($vehicle->load('customer:id,uuid,first_name,last_name'), 201);
     }
 
     public function update(Request $request, Vehicle $vehicle): JsonResponse
@@ -77,7 +77,7 @@ class VehicleController extends Controller
             Storage::disk('public')->delete($previousImagePath);
         }
 
-        return response()->json($vehicle->refresh()->load('customer:id,first_name,last_name'));
+        return response()->json($vehicle->refresh()->load('customer:id,uuid,first_name,last_name'));
     }
 
     public function destroy(Vehicle $vehicle): JsonResponse

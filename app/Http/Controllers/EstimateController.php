@@ -26,8 +26,8 @@ class EstimateController extends Controller
     {
         $estimates = Estimate::query()
             ->with([
-                'customer:id,first_name,last_name',
-                'vehicle:id,customer_id,year,make,model,sub_model',
+                'customer:id,uuid,first_name,last_name',
+                'vehicle:id,uuid,customer_id,year,make,model,sub_model',
                 'serviceWriter:id,name',
                 'services.lineItems.technician:id,name',
             ])
@@ -83,8 +83,8 @@ class EstimateController extends Controller
     public function show(Estimate $estimate): JsonResponse
     {
         $estimate->load([
-            'customer:id,first_name,last_name,phone,email',
-            'vehicle:id,customer_id,year,make,model,sub_model,vin,mileage',
+            'customer:id,uuid,first_name,last_name,phone,email',
+            'vehicle:id,uuid,customer_id,year,make,model,sub_model,vin,mileage',
             'serviceWriter:id,name',
             'services.lineItems.technician:id,name',
         ]);
@@ -121,8 +121,8 @@ class EstimateController extends Controller
 
         return response()->json([
             'estimate' => $estimate->load([
-                'customer:id,first_name,last_name,phone,email',
-                'vehicle:id,customer_id,year,make,model,sub_model,vin,mileage',
+                'customer:id,uuid,first_name,last_name,phone,email',
+                'vehicle:id,uuid,customer_id,year,make,model,sub_model,vin,mileage',
                 'serviceWriter:id,name',
                 'services.lineItems.technician:id,name',
             ]),
@@ -144,8 +144,8 @@ class EstimateController extends Controller
 
         return response()->json([
             'estimate' => $estimate->refresh()->load([
-                'customer:id,first_name,last_name,phone,email',
-                'vehicle:id,customer_id,year,make,model,sub_model,vin,mileage',
+                'customer:id,uuid,first_name,last_name,phone,email',
+                'vehicle:id,uuid,customer_id,year,make,model,sub_model,vin,mileage',
                 'serviceWriter:id,name',
                 'services.lineItems.technician:id,name',
             ]),

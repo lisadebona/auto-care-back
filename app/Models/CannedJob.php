@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasPublicUuid;
 use Database\Factories\CannedJobFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -13,7 +14,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class CannedJob extends Model
 {
     /** @use HasFactory<CannedJobFactory> */
-    use HasFactory;
+    use HasFactory, HasPublicUuid;
 
     /**
      * @var list<string>
