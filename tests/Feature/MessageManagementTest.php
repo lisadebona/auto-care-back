@@ -49,6 +49,26 @@ class MessageManagementTest extends TestCase
             ->assertJsonMissingPath('messages.0.html_body');
     }
 
+    public function test_unread_filter_lists_only_incoming_messages_that_are_still_unread(): void
+    {
+        $actor = $this->messageUser(['messages.view']);
+        EmailMessage::factory()->create([
+            'subject' => 'Unread arrival',
+            'is_read' => false,
+        ]);
+        EmailMessage::factory()->create([
+            'subject' => 'Already read',
+            'is_read' => true,
+        ]);
+
+        $this->actingAs($actor)
+            ->getJson('/api/messages?unread=1')
+            ->assertOk()
+            ->assertJsonCount(1, 'messages')
+            ->assertJsonPath('messages.0.subject', 'Unread arrival')
+            ->assertJsonPath('messages.0.is_read', false);
+    }
+
     public function test_viewing_a_message_marks_it_read_and_returns_the_body(): void
     {
         $actor = $this->messageUser(['messages.view']);

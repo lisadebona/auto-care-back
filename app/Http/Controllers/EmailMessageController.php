@@ -28,6 +28,9 @@ class EmailMessageController extends Controller
                 'is_read',
                 'synced_at',
             ])
+            ->when($request->boolean('unread'), function ($query): void {
+                $query->where('is_read', false);
+            })
             ->when($request->input('search'), function ($query, string $search): void {
                 $query->where(function ($query) use ($search): void {
                     $query->where('subject', 'like', "%{$search}%")
